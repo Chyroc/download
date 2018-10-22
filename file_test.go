@@ -45,4 +45,11 @@ func TestFilename(t *testing.T) {
 		as.True(strings.HasPrefix(p.partFilename(), os.TempDir()+"tmp-2-1-"))
 		as.True(strings.HasSuffix(p.partFilename(), "1.mp4-1"))
 	}
+
+	{
+		f, err := ensureDirExist("/tmp/3/3.mo4")
+		as.Nil(err)
+		as.Equal("/tmp/3", f)
+		os.Remove("/tmp/3")
+	}
 }

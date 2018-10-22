@@ -1,6 +1,7 @@
 package download
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -133,6 +134,10 @@ func (d *download) partDownload() error {
 }
 
 func (d *download) joinFile() error {
+	if _, err := ensureDirExist(d.filename); err != nil {
+		return err
+	}
+
 	f, err := os.OpenFile(d.filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		return err
@@ -156,4 +161,30 @@ func (d *download) joinFile() error {
 	}
 
 	return os.RemoveAll(d.tempDir)
+}
+
+func ensureDirExist(s string) (string, error) {
+	if s == "" || strings.HasSuffix(s, "/") {
+		return "", fmt.Errorf("不合法的文件名：%s", s)
+	}
+	dirs := strings.Split(s, "/")
+	dir := ""
+	switch len(dirs) {
+	case 0:
+	case 1:
+		return "", nil
+	case 2:
+		dir = dirs[0]
+	default:
+		fmt.Println(dirs)
+		dir = strings.Join(dirs[:len(dirs)-1], "/")
+	}
+
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			return dir, os.MkdirAll(dir, os.ModePerm)
+		}
+		return "", err
+	}
+	return dir, nil
 }
